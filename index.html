@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Life ROI Calculator | 인생 가성비 판독기</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Canvas Confetti -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <style>
+    @keyframes float {
+      0%, 100% { transform: translateY(0px) rotate(0deg); }
+      50% { transform: translateY(-6px) rotate(1deg); }
+    }
+    .animate-float {
+      animation: float 4s ease-in-out infinite;
+    }
+    input[type=range]::-webkit-slider-thumb {
+      appearance: none;
+      height: 22px;
+      width: 22px;
+      border-radius: 50%;
+      background: #6366f1;
+      border: 3px solid #1e1b4b;
+      box-shadow: 0 0 10px rgba(99, 102, 241, 0.5);
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body class="bg-neutral-950 text-neutral-100 min-h-screen flex flex-col items-center justify-center p-4 selection:bg-indigo-500 selection:text-white">
+
+  <!-- Main Container -->
+  <div class="w-full max-w-md bg-neutral-900/80 backdrop-blur-xl border border-neutral-800/80 rounded-3xl p-6 md:p-8 shadow-2xl relative overflow-hidden">
+    
+    <!-- Background Glow Effect -->
+    <div class="absolute -top-24 -left-24 w-48 h-48 bg-indigo-600/20 rounded-full blur-3xl pointer-events-none"></div>
+    <div class="absolute -bottom-24 -right-24 w-48 h-48 bg-rose-600/10 rounded-full blur-3xl pointer-events-none"></div>
+
+    <!-- Header & Hero Icon Mark -->
+    <header class="text-center mb-8 relative">
+      
+      <!-- Graphic Symbol Mark (SVG) -->
+      <div class="w-20 h-20 mx-auto mb-4 relative flex items-center justify-center animate-float">
+        <div class="absolute inset-0 bg-gradient-to-tr from-indigo-500 to-rose-500 rounded-2xl rotate-6 opacity-30 blur-sm"></div>
+        <div class="relative w-full h-full bg-neutral-950/90 border border-neutral-700/80 rounded-2xl flex items-center justify-center shadow-inner">
+          <svg class="w-10 h-10 text-indigo-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10" class="stroke-neutral-800" stroke-width="2" />
+            <!-- Upward ROI Arrow with dynamic path -->
+            <path d="M16 8l-4-4-4 4" class="text-indigo-400 stroke-indigo-400" />
+            <path d="M12 4v11" class="text-indigo-400 stroke-indigo-400" />
+            <path d="M7 16a5 5 0 0 0 10 0" class="stroke-rose-400" />
+          </svg>
+        </div>
+      </div>
+
+      <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-neutral-800 border border-neutral-700 text-neutral-300 text-[11px] font-medium tracking-wide mb-2.5">
+        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> LIFE ROI VERIFIER
+      </div>
+      <h1 class="text-2xl font-black tracking-tight text-white">인생 가성비 판독기</h1>
+      <p class="text-xs text-neutral-400 mt-1.5">
+        고민과 감정 소모는 끝. 10초 만에 손절 여부를 판별합니다.
+      </p>
+    </header>
+
+    <!-- Step 1: Input Form -->
+    <div id="calculator-step" class="space-y-5 relative">
+      
+      <!-- Activity Input -->
+      <div>
+        <input id="activity-name" type="text" placeholder="어떤 활동/관계가 고민인가요?" 
+          class="w-full px-4 py-3 bg-neutral-950/70 border border-neutral-800 rounded-xl text-sm focus:outline-none focus:border-indigo-500 transition text-center placeholder:text-neutral-500 font-medium">
+      </div>
+
+      <!-- Cost Section -->
+      <div class="p-4 bg-neutral-950/50 border border-neutral-800/80 rounded-2xl space-y-3.5">
+        <div class="flex items-center justify-between text-xs font-bold text-rose-400">
+          <span class="flex items-center gap-1.5"><i data-lucide="flame" class="w-3.5 h-3.5"></i> 투입 비용 & 스트레스</span>
+          <span id="cost-summary" class="text-[11px] font-normal text-neutral-400">보통 수준</span>
+        </div>
+        
+        <div>
+          <div class="flex justify-between text-xs text-neutral-300 mb-1">
+            <span>소요 시간</span>
+            <span id="time-val" class="font-semibold text-white">3시간</span>
+          </div>
+          <input id="input-time" type="range" min="1" max="15" value="3" class="w-full h-1.5 bg-neutral-800 rounded-lg appearance-none cursor-pointer">
+        </div>
+
+        <div>
+          <div class="flex justify-between text-xs text-neutral-300 mb-1">
+            <span>감정 소모 / 귀찮음 강도</span>
+            <span id="stress-val" class="font-semibold text-white">3단계</span>
+          </div>
+          <input id="input-stress" type="range" min="1" max="5" value="3" class="w-full h-1.5 bg-neutral-800 rounded-lg appearance-none cursor-pointer">
+        </div>
+      </div>
+
+      <!-- Gain Section -->
+      <div class="p-4 bg-neutral-950/50 border border-neutral-800/80 rounded-2xl space-y-3.5">
+        <div class="flex items-center justify-between text-xs font-bold text-indigo-400">
+          <span class="flex items-center gap-1.5"><i data-lucide="sparkles" class="w-3.5 h-3.5"></i> 기대 보상 & 만족감</span>
+          <span id="gain-summary" class="text-[11px] font-normal text-neutral-400">성장 중심</span>
+        </div>
+
+        <div>
+          <div class="flex justify-between text-xs text-neutral-300 mb-1">
+            <span>돈 / 스펙 / 네트워크 이득</span>
+            <span id="gain-growth-val" class="font-semibold text-white">3점 / 5</span>
+          </div>
+          <input id="gain-growth" type="range" min="1" max="5" value="3" class="w-full h-1.5 bg-neutral-800 rounded-lg appearance-none cursor-pointer">
+        </div>
+
+        <div>
+          <div class="flex justify-between text-xs text-neutral-300 mb-1">
+            <span>순수한 재미 / 힐링 충전</span>
+            <span id="gain-joy-val" class="font-semibold text-white">3점 / 5</span>
+          </div>
+          <input id="gain-joy" type="range" min="1" max="5" value="3" class="w-full h-1.5 bg-neutral-800 rounded-lg appearance-none cursor-pointer">
+        </div>
+      </div>
+
+      <!-- Submit Button -->
+      <button id="calc-btn" class="w-full py-4 bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-400 font-bold rounded-2xl text-white text-sm transition shadow-lg shadow-indigo-600/25 flex items-center justify-center gap-2">
+        <span>지금 즉시 판별하기</span>
+        <i data-lucide="arrow-right" class="w-4 h-4"></i>
+      </button>
+    </div>
+
+    <!-- Step 2: Result View -->
+    <div id="result-step" class="hidden space-y-6 relative">
+      <div class="bg-neutral-950 border border-neutral-800 rounded-2xl p-6 text-center space-y-4">
+        
+        <div class="text-[10px] text-neutral-500 uppercase tracking-widest font-mono">Analysis Result</div>
+        <h3 id="res-activity" class="text-base font-bold text-white truncate">활동명</h3>
+        
+        <div class="py-2">
+          <div id="res-badge" class="text-6xl font-black tracking-tight drop-shadow-md">
+            S
+          </div>
+          <div id="res-score" class="text-xs text-neutral-400 mt-1 font-mono">ROI INDEX: 240%</div>
+        </div>
+
+        <div class="p-3.5 rounded-xl bg-neutral-900 border border-neutral-800 text-left">
+          <p id="res-action" class="text-xs text-neutral-300 leading-relaxed font-medium">
+            진단 결과가 표시됩니다.
+          </p>
+        </div>
+      </div>
+
+      <div class="space-y-2">
+        <button id="copy-btn" class="w-full py-3.5 bg-neutral-800 hover:bg-neutral-700 text-white font-semibold rounded-xl text-xs transition flex items-center justify-center gap-2">
+          <i data-lucide="share-2" class="w-3.5 h-3.5"></i> 쓰레드 공유 텍스트 복사
+        </button>
+        <button id="retry-btn" class="w-full py-2.5 text-neutral-500 hover:text-neutral-300 font-medium text-xs transition">
+          다시 판별하기
+        </button>
+      </div>
+    </div>
+
+  </div>
+
+  <footer class="mt-6 text-center text-[10px] text-neutral-600 font-mono">
+    ACTION > TALK
+  </footer>
+
+  <script>
+    lucide.createIcons();
+
+    const bind = (id, targetId, suffix = '') => {
+      const el = document.getElementById(id);
+      const target = document.getElementById(targetId);
+      el.addEventListener('input', () => target.innerText = el.value + suffix);
+    };
+
+    bind('input-time', 'time-val', '시간');
+    bind('input-stress', 'stress-val', '단계');
+    bind('gain-growth', 'gain-growth-val', '점 / 5');
+    bind('gain-joy', 'gain-joy-val', '점 / 5');
+
+    const calcBtn = document.getElementById('calc-btn');
+    const retryBtn = document.getElementById('retry-btn');
+    const copyBtn = document.getElementById('copy-btn');
+    const calcStep = document.getElementById('calculator-step');
+    const resultStep = document.getElementById('result-step');
+
+    let shareText = '';
+
+    calcBtn.addEventListener('click', () => {
+      const activity = document.getElementById('activity-name').value.trim() || '이름 없는 활동';
+      const time = parseFloat(document.getElementById('input-time').value);
+      const stress = parseFloat(document.getElementById('input-stress').value);
+      const gainGrowth = parseFloat(document.getElementById('gain-growth').value);
+      const gainJoy = parseFloat(document.getElementById('gain-joy').value);
+
+      // Simple, robust calculation
+      const cost = (time * 1.8) + (stress * 3.5);
+      const gain = (gainGrowth * 4.5) + (gainJoy * 4.0);
+      const ratio = Math.round((gain / Math.max(cost, 1)) * 100);
+
+      let grade = 'B';
+      let gradeColor = 'text-amber-400';
+      let verdict = '';
+
+      if (ratio >= 150) {
+        grade = 'S';
+        gradeColor = 'text-emerald-400';
+        verdict = '압도적인 ROI입니다. 다른 잡무를 미루더라도 이 활동에 에너지를 쏟으세요.';
+        confetti({ particleCount: 60, spread: 50, origin: { y: 0.6 } });
+      } else if (ratio >= 100) {
+        grade = 'A';
+        gradeColor = 'text-indigo-400';
+        verdict = '충분히 할 가치가 있습니다. 에너지 누수 없이 지속해보세요.';
+      } else if (ratio >= 70) {
+        grade = 'B';
+        gradeColor = 'text-amber-400';
+        verdict = '투입 대비 얻는 게 애매합니다. 시간을 반으로 줄이거나 방식을 바꾸세요.';
+      } else {
+        grade = 'F';
+        gradeColor = 'text-rose-500';
+        verdict = '극심한 에너지 낭비입니다. 성장도 힐링도 없습니다. 지금 즉시 손절(Cut-off)하세요.';
+      }
+
+      document.getElementById('res-activity').innerText = activity;
+      const badge = document.getElementById('res-badge');
+      badge.className = `text-6xl font-black tracking-tight drop-shadow-md ${gradeColor}`;
+      badge.innerText = `${grade} 등급`;
+      document.getElementById('res-score').innerText = `ROI INDEX: ${ratio}%`;
+      document.getElementById('res-action').innerText = verdict;
+
+      shareText = `[Life ROI 판별 결과]\n활동: ${activity}\n등급: ${grade} (${ratio}%)\n판정: ${verdict}\n\n#라이프ROI #손절판독기`;
+
+      calcStep.classList.add('hidden');
+      resultStep.classList.remove('hidden');
+    });
+
+    retryBtn.addEventListener('click', () => {
+      resultStep.classList.add('hidden');
+      calcStep.classList.remove('hidden');
+    });
+
+    copyBtn.addEventListener('click', () => {
+      navigator.clipboard.writeText(shareText).then(() => {
+        copyBtn.innerHTML = `<i data-lucide="check" class="w-3.5 h-3.5 text-emerald-400"></i> 복사 완료! 쓰레드에 공유하세요`;
+        lucide.createIcons();
+        setTimeout(() => {
+          copyBtn.innerHTML = `<i data-lucide="share-2" class="w-3.5 h-3.5"></i> 쓰레드 공유 텍스트 복사`;
+          lucide.createIcons();
+        }, 2000);
+      });
+    });
+  </script>
+</body>
+</html>
